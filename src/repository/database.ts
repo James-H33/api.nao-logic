@@ -66,6 +66,21 @@ export class DatabaseService {
         FOREIGN KEY (workspace_id) REFERENCES workspaces(id),
         FOREIGN KEY (work_center_id) REFERENCES work_centers(id)
       );
+
+      CREATE TABLE IF NOT EXISTS views (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        workspace_id TEXT NOT NULL,
+        FOREIGN KEY (workspace_id) REFERENCES workspaces(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS view_work_orders (
+        view_id TEXT NOT NULL,
+        work_order_id TEXT NOT NULL,
+        PRIMARY KEY (view_id, work_order_id),
+        FOREIGN KEY (view_id) REFERENCES views(id),
+        FOREIGN KEY (work_order_id) REFERENCES work_orders(id)
+      );
     `);
   }
 
@@ -74,10 +89,17 @@ export class DatabaseService {
 
     return this.db.exec(`
       INSERT INTO workspaces (id, name) VALUES ('workspace-1', 'Workspace 1');
+
       INSERT INTO work_centers (id, name, workspace_id) VALUES ('workcenter-1', 'Work Center 1', 'workspace-1');
+
       INSERT INTO users (id, name, email, workspace_id) VALUES ('user-1', 'User 1', 'user1@example.com', 'workspace-1');
+
       INSERT INTO work_orders (id, work_center_id, name, description, start_date, end_date, status, workspace_id) VALUES
         ('workorder-1', 'workcenter-1', 'Work Order 1', 'Work Order 1 Description', '2024-01-01', '2024-01-07', 'open', 'workspace-1');
+
+      INSERT INTO views (id, name, workspace_id) VALUES ('v1', 'My Custom View', 'workspace-1');
+
+      INSERT INTO view_work_orders VALUES ('v1', 'workorder-1');
     `);
   }
 

@@ -15,6 +15,21 @@ export class WorkOrdersService {
     return results.map((result) => this.toDto(result));
   }
 
+  async getAllByWorkspace(
+    workspaceId: string,
+  ): Promise<WorkOrderDocumentDto[]> {
+    const allWorkOrders = await this.workOrderRepository.getAll();
+    const results: WorkOrderDocumentDto[] = [];
+
+    for (const workOrder of allWorkOrders) {
+      if (workOrder.workspace_id === workspaceId) {
+        results.push(this.toDto(workOrder));
+      }
+    }
+
+    return results;
+  }
+
   async getBulk(body: {
     ids: string[];
     workspaceId: string;
@@ -39,12 +54,12 @@ export class WorkOrdersService {
     return results;
   }
 
-  async create(workOrder: CreateWorkOrderDto): Promise<void> {
+  async create(workOrder: CreateWorkOrderDto): Promise<WorkOrderDocumentDto> {
     const id = crypto.randomUUID();
 
     // Would we add some logic here to check if the work center exists before creating the work order?
 
-    await this.workOrderRepository.create({
+    const newWorkOrder = {
       id,
       name: workOrder.name,
       description: workOrder.description,
@@ -53,7 +68,11 @@ export class WorkOrdersService {
       status: workOrder.status,
       start_date: workOrder.startDate,
       end_date: workOrder.endDate,
-    });
+    };
+
+    await this.workOrderRepository.create(newWorkOrder);
+
+    return this.toDto(newWorkOrder);
   }
 
   private toDto(result: WorkOrder): WorkOrderDocumentDto {

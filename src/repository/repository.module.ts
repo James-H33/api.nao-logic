@@ -4,6 +4,7 @@ import { DatabaseService } from './database';
 import { WorkCenterRepository } from './work-center.repository';
 import { WorkOrderRepository } from './work-order.repository';
 import { WorkspaceRepository } from './workspace.repository';
+import { ViewsRepository } from './views.repository';
 
 @Module({
   imports: [],
@@ -14,6 +15,7 @@ import { WorkspaceRepository } from './workspace.repository';
     WorkCenterRepository,
     WorkOrderRepository,
     WorkspaceRepository,
+    ViewsRepository,
   ],
   exports: [
     DatabaseService,
@@ -21,6 +23,7 @@ import { WorkspaceRepository } from './workspace.repository';
     WorkCenterRepository,
     WorkOrderRepository,
     WorkspaceRepository,
+    ViewsRepository,
   ],
 })
 export class RepositoryModule {}

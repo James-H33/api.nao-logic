@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+import { WorkspaceId } from 'src/common/decorators/workspace-id.decorator';
 import { WorkOrdersService } from 'src/services/work-orders.service';
 import type { CreateWorkOrderDto } from 'src/types/dto/create-work-order.dto';
 
@@ -12,15 +13,24 @@ export class WorkOrdersController {
   }
 
   @Post('/bulk')
-  async getBulk(@Body() body: { ids: string[]; workspaceId: string }) {
-    return this.workOrdersService.getBulk(body);
+  async getBulk(
+    @WorkspaceId() workspaceId: string,
+    @Body() body: { ids: string[] },
+  ) {
+    return this.workOrdersService.getBulk({
+      ...body,
+      workspaceId,
+    });
   }
 
   @Post()
   async create(
-    @Body()
-    body: CreateWorkOrderDto,
+    @WorkspaceId() workspaceId: string,
+    @Body() body: CreateWorkOrderDto,
   ) {
-    await this.workOrdersService.create(body);
+    return await this.workOrdersService.create({
+      ...body,
+      workspaceId,
+    });
   }
 }
