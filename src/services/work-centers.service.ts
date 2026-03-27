@@ -22,15 +22,45 @@ export class WorkCentersService {
     return results.map((result) => this.toDto(result));
   }
 
+  async getBulk(body: {
+    ids: string[];
+    workspaceId: string;
+  }): Promise<WorkCenterDocumentDto[]> {
+    const allWorkCenters = await this.workCenterRepository.getAll();
+    const workCentersMap = new Map<string, WorkCenter>();
+
+    for (const workCenter of allWorkCenters) {
+      workCentersMap.set(workCenter.id, workCenter);
+    }
+
+    const results: WorkCenterDocumentDto[] = [];
+
+    for (const id of body.ids) {
+      const workCenter = workCentersMap.get(id);
+
+      if (workCenter && workCenter.workspace_id === body.workspaceId) {
+        results.push(this.toDto(workCenter));
+      }
+    }
+
+    return results;
+  }
+
   async create(workCenter: {
     name: string;
     workspaceId: string;
-  }): Promise<void> {
+  }): Promise<WorkCenterDocumentDto> {
     const id = crypto.randomUUID();
 
     // Would we add some logic here to check if the workspace exists before creating the work center?
 
     await this.workCenterRepository.create({
+      id,
+      name: workCenter.name,
+      workspace_id: workCenter.workspaceId,
+    });
+
+    return this.toDto({
       id,
       name: workCenter.name,
       workspace_id: workCenter.workspaceId,
