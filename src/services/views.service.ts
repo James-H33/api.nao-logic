@@ -4,12 +4,14 @@ import { ViewDto } from 'src/types/dto/view.dto';
 import { WorkOrdersService } from './work-orders.service';
 import { BulkViewDto } from 'src/types/dto/bulk-view.dto';
 import { View } from 'src/types/model/view.model';
+import { WorkCentersService } from './work-centers.service';
 
 @Injectable()
 export class ViewsService {
   constructor(
     private readonly viewsRepository: ViewsRepository,
     private readonly workOrderService: WorkOrdersService,
+    private readonly workCenterService: WorkCentersService,
   ) {}
 
   async getViewsByWorkspaceId(workspaceId: string): Promise<BulkViewDto[]> {
@@ -39,21 +41,19 @@ export class ViewsService {
 
     const workSpaceId = view.workspace_id;
 
-    const workOrders =
-      await this.workOrderService.getAllByWorkspace(workSpaceId);
+    const workOrdersReq = this.workOrderService.getAllByWorkspace(workSpaceId);
+    const workCentersReq =
+      this.workCenterService.getAllByWorkspace(workSpaceId);
 
-    const workCenters = new Set<string>();
-
-    for (const wo of workOrders) {
-      if (wo.data.workCenterId) {
-        workCenters.add(wo.data.workCenterId);
-      }
-    }
+    const [workOrders, workCenters] = await Promise.all([
+      workOrdersReq,
+      workCentersReq,
+    ]);
 
     return {
       viewId: view.id,
       name: view.name,
-      workCenterIds: Array.from(workCenters).map((id) => id),
+      workCenterIds: workCenters.map((wc) => wc.docId),
       workOrderIds: workOrders.map((wo) => wo.docId),
     };
   }
