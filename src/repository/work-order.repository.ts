@@ -42,4 +42,42 @@ export class WorkOrderRepository {
         ],
       );
   }
+
+  async update(workOrder: WorkOrder, workspaceId: string): Promise<void> {
+    const {
+      id,
+      name,
+      description,
+      start_date,
+      end_date,
+      status,
+      workspace_id,
+      work_center_id,
+    } = workOrder;
+
+    await this.db
+      .getDb()
+      .run(
+        'UPDATE work_orders SET name = ?, description = ?, start_date = ?, end_date = ?, status = ?, workspace_id = ?, work_center_id = ? WHERE id = ?',
+        [
+          name,
+          description,
+          start_date,
+          end_date,
+          status,
+          workspace_id,
+          work_center_id,
+          id,
+        ],
+      );
+  }
+
+  async deleteById(id: string, workspaceId: string): Promise<void> {
+    await this.db
+      .getDb()
+      .run('DELETE FROM work_orders WHERE id = ? AND workspace_id = ?', [
+        id,
+        workspaceId,
+      ]);
+  }
 }
