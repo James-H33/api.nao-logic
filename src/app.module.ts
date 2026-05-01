@@ -8,6 +8,8 @@ import { ViewsModule } from './controllers/views/views.module';
 import { WorkCentersModule } from './controllers/work-centers/work-centers.module';
 import { WorkOrdersModule } from './controllers/work-orders/work-orders.module';
 import { WorkspacesModule } from './controllers/workspaces/workspaces.module';
+import { GatewayModule } from './gateway/gateway.module';
+import { AuthModule } from './controllers/auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { WorkspacesModule } from './controllers/workspaces/workspaces.module';
     ViewsModule,
     UsersModule,
     WorkspacesModule,
+    GatewayModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

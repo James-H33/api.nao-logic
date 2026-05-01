@@ -1,21 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from 'src/repository/user.repository';
+import { AuthenticatedDto } from 'src/types/dto/authenticated.dto';
 import { UserDto } from 'src/types/dto/user.dto';
 
 @Injectable()
 export class UsersService {
-  /**
-   * create(name: string, email: string, workspaceId: string)
-   * getOne(id: string)
-   * getUserWorkspace(id: string)
-   */
-
   constructor(private readonly userRepo: UserRepository) {}
+
+  async login(body: {
+    username: string;
+    password: string;
+  }): Promise<AuthenticatedDto> {
+    const result = await this.userRepo.getOne(body.username);
+
+    if (!result) {
+      throw new Error('Invalid username or password');
+    }
+
+    return {
+      authToken: result?.email,
+      workspaceId: result?.workspace_id || null,
+    };
+  }
 
   async getAll(): Promise<UserDto[]> {
     const results = await this.userRepo.getAll();
-
-    console.log(results);
 
     return results.map((result) => ({
       id: result.id,

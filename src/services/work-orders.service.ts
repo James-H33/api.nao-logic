@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { Gateway } from 'src/gateway/gateway.socket';
 import { WorkOrderRepository } from 'src/repository/work-order.repository';
 import { CreateWorkOrderDto } from 'src/types/dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from 'src/types/dto/update-work-order.dto';
 import { WorkOrderDocumentDto } from 'src/types/dto/work-order-document.dto';
+import { HeaderCredentials } from 'src/types/header-credentials.interface';
 import { WorkOrder } from 'src/types/model/work-order.model';
+import { SocketMessages } from 'src/types/socket-messages.enum';
 import { WorkOrderStatus } from 'src/types/work-order-status';
 
 @Injectable()
 export class WorkOrdersService {
-  constructor(private readonly workOrderRepository: WorkOrderRepository) {}
+  constructor(
+    private readonly workOrderRepository: WorkOrderRepository,
+    private readonly gateway: Gateway,
+  ) {}
 
   async getAll(): Promise<WorkOrderDocumentDto[]> {
     const results = await this.workOrderRepository.getAll();
@@ -57,7 +63,7 @@ export class WorkOrdersService {
 
   async create(
     workOrder: CreateWorkOrderDto,
-    workspaceId: string,
+    { workspaceId, authToken }: HeaderCredentials,
   ): Promise<WorkOrderDocumentDto> {
     const id = crypto.randomUUID();
 
@@ -76,12 +82,22 @@ export class WorkOrdersService {
 
     await this.workOrderRepository.create(newWorkOrder);
 
+    this.gateway.sendMessage(
+      SocketMessages.WORK_ORDER_CREATED,
+      workspaceId,
+      {
+        workOrderIds: [id],
+        workspaceId,
+      },
+      { ignore: [authToken] },
+    );
+
     return this.toDto(newWorkOrder);
   }
 
   async update(
     workOrder: UpdateWorkOrderDto,
-    workspaceId: string,
+    { workspaceId, authToken }: HeaderCredentials,
   ): Promise<WorkOrderDocumentDto> {
     const newWorkOrder = {
       id: workOrder.id,
@@ -96,11 +112,35 @@ export class WorkOrdersService {
 
     await this.workOrderRepository.update(newWorkOrder, workspaceId);
 
+    this.gateway.sendMessage(
+      SocketMessages.WORK_ORDER_UPDATED,
+      workspaceId,
+      {
+        workOrderIds: [newWorkOrder.id],
+        workspaceId,
+      },
+      {
+        ignore: [authToken],
+      },
+    );
+
     return this.toDto(newWorkOrder);
   }
 
-  async delete(id: string, workspaceId: string): Promise<void> {
+  async delete(
+    id: string,
+    { workspaceId, authToken }: HeaderCredentials,
+  ): Promise<void> {
     await this.workOrderRepository.deleteById(id, workspaceId);
+
+    this.gateway.sendMessage(
+      SocketMessages.WORK_ORDER_DELETED,
+      workspaceId,
+      { workOrderIds: [id], workspaceId },
+      {
+        ignore: [authToken],
+      },
+    );
   }
 
   private toDto(result: WorkOrder): WorkOrderDocumentDto {
