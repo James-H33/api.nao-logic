@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import { Credentials } from 'src/common/decorators/credentials.decorator';
 import { WorkspaceId } from 'src/common/decorators/workspace-id.decorator';
 import { WorkOrdersService } from 'src/services/work-orders.service';
 import type { CreateWorkOrderDto } from 'src/types/dto/create-work-order.dto';
 import type { UpdateWorkOrderDto } from 'src/types/dto/update-work-order.dto';
+import type { HeaderCredentials } from 'src/types/header-credentials.interface';
 
 @Controller('work-orders')
 export class WorkOrdersController {
@@ -23,25 +25,25 @@ export class WorkOrdersController {
 
   @Post()
   async create(
-    @WorkspaceId() workspaceId: string,
+    @Credentials() credentials: HeaderCredentials,
     @Body() body: CreateWorkOrderDto,
   ) {
-    return await this.workOrdersService.create(body, workspaceId);
+    return await this.workOrdersService.create(body, credentials);
   }
 
   @Put()
   async update(
-    @WorkspaceId() workspaceId: string,
+    @Credentials() credentials: HeaderCredentials,
     @Body() body: UpdateWorkOrderDto,
   ) {
-    return await this.workOrdersService.update(body, workspaceId);
+    return await this.workOrdersService.update(body, credentials);
   }
 
   @Delete()
   async delete(
-    @WorkspaceId() workspaceId: string,
+    @Credentials() credentials: HeaderCredentials,
     @Body() body: { id: string },
   ) {
-    return await this.workOrdersService.delete(body.id, workspaceId);
+    return await this.workOrdersService.delete(body.id, credentials);
   }
 }

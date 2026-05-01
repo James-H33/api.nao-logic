@@ -5,9 +5,10 @@ import { WorkCentersService } from './work-centers.service';
 import { WorkOrdersService } from './work-orders.service';
 import { WorkSpacesService } from './workspaces.service';
 import { ViewsService } from './views.service';
+import { GatewayModule } from 'src/gateway/gateway.module';
 
 @Module({
-  imports: [RepositoryModule],
+  imports: [RepositoryModule, GatewayModule],
   controllers: [],
   providers: [
     UsersService,
